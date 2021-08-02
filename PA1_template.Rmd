@@ -13,24 +13,72 @@ activity <- read.csv("./activity.csv", header = TRUE, sep=",")
 dim(activity)
 head(activity)
 ```
-activity <- read.csc()
 
 
 ## What is mean total number of steps taken per day?
-To calculate the average steps per day, first store total steps to the totalstep object and store the number of days to the numdays object.
+Calculate the total number of steps each day and store data to the "stepsperday" object.
 ```{r}
-totalstep <- sum(activity$steps, na.rm=TRUE)
-numdays <- length(unique(activity$date))
-averagestep <- totalstep / numdays
-print(averagestep)
+stepsperday <- tapply(activity$steps, activity$date, sum)
+```
+Draw histgram steps per day.
+```{r}
+hist(stepsperday)
 ```
 
+To calculate the mean and median of steps per day.
+```{r}
+meanwna <- mean(stepsperday, na.rm=TRUE)
+medianwna <- median(stepsperday, na.rm=TRUE)
+```
+Mean is `r meanwna` and median `r medianwna`.
+
 ## What is the average daily activity pattern?
+Calculate the average steps per interval for all days, and visualize it in line chart.
+```{r}
+stepsperint <- aggregate(steps ~ interval, data=activity, FUN=mean, na.rm=FALSE)
+plot(stepsperint$interval, stepsperint$steps, type="l")
+```
 
-
+```{r}
+maxintstep <- max(stepsperint$steps)
+maxint <- stepsperint$interval[which.max(stepsperint$steps)]
+```
+Max steps of Interval is `r maxintstep` and the Interval is `r maxint`.
 
 ## Imputing missing values
+NAs are only existing in the column of steps, the total number of missing value is as below.
+```{r}
+colSums(is.na(activity))
+```
 
+Create new object called activitynona by copy it from acrivity object and fill the NA value in the steps columns with rest of the average acrity for all data.
+```{r}
+activitynona <- activity
+activitynona[is.na(activitynona)] <- mean(activity$steps, na.rm=TRUE)
+colSums(is.na(activitynona))
+```
 
+After filling NAs, recreate the histgram of steps per day.
+```{r}
+stepsperdaynona <- aggregate(steps ~ date, data=activitynona, sum)
+hist(stepsperdaynona$steps)
+meannona <- mean(stepsperdaynona$steps, na.rm=TRUE)
+mediannona <- median(stepsperdaynona$steps, na.rm=TRUE)
+```
+
+Even after filling the NAs with average(steps) the mean and median of steps per day will no change a lot.
+
+New mean is `r meannona` and it was `r meanwna`.
+
+New Median is `r mediannona` and it was `r medianwna`.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+First add new factor valuable on the data set called weekendflag.
+```{r}
+library(dplyr)
+activitynona <- mutate(activitynona, weekendflag = ifelse(weekdays(strptime(activitynona$date, "%Y-%m-%d")) %in% c("日曜日","土曜日"), "Weekend","Weekday"))
+stepsweekofday <- aggregate(steps ~ interval + weekendflag, activitynona, mean)
+library(lattice)
+xyplot(steps ~ interval | weekendflag, stepsweekofday, type='l', layout=c(1,2))
+```
+
