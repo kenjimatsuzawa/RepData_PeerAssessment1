@@ -7,12 +7,23 @@ output:
 
 
 ## Loading and preprocessing the data
-
+First load activity.csv data to the object called "activity" and look at the dimentions of data and see first few lines of data.
+```{r}
+activity <- read.csv("./activity.csv", header = TRUE, sep=",")
+dim(activity)
+head(activity)
+```
+activity <- read.csc()
 
 
 ## What is mean total number of steps taken per day?
-
-
+To calculate the average steps per day, first store total steps to the totalstep object and store the number of days to the numdays object.
+```{r}
+totalstep <- sum(activity$steps, na.rm=TRUE)
+numdays <- length(unique(activity$date))
+averagestep <- totalstep / numdays
+print(averagestep)
+```
 
 ## What is the average daily activity pattern?
 
